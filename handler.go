@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/cottand/leng/internal/metric"
 	"net"
+	"runtime"
 	"slices"
 	"sync"
 	"time"
@@ -90,7 +91,10 @@ func NewEventLoop(config *Config, blockCache *MemoryBlockCache, questionCache *M
 		customDns:      NewCustomRecordsResolver(NewCustomDNSRecordsFromText(config.CustomDNSRecords)),
 	}
 
-	go handler.do()
+	workers := config.WorkerPerCore * runtime.NumCPU()
+	for i := 0; i < workers; i++ {
+		go handler.do()
+	}
 
 	return handler
 }

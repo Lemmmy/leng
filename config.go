@@ -36,6 +36,7 @@ type Config struct {
 	Metrics           Metrics `toml:"metrics"`
 	DnsOverHttpServer DnsOverHttpServer
 	FollowCnameDepth  uint32
+	WorkerPerCore     int
 }
 
 type Blocking struct {
@@ -129,6 +130,9 @@ customdnsrecords = [
 # (anything more than 10 should be more than plenty)
 # see https://github.com/Cottand/leng/wiki/CNAME%E2%80%90following-DNS
 followCnameDepth = 12
+
+# worker per core count for the DNS handler
+workersPerCore = 8
 
 [Blocking]
 	# response to blocked queries with a NXDOMAIN
