@@ -1,9 +1,10 @@
 package main
 
 import (
+	"net"
+
 	"github.com/cottand/leng/internal/metric"
 	"github.com/miekg/dns"
-	"net"
 )
 
 type CustomDNSRecords struct {
@@ -51,7 +52,18 @@ func (records CustomDNSRecords) asHandler() func(dns.ResponseWriter, *dns.Msg) {
 	return func(writer dns.ResponseWriter, req *dns.Msg) {
 		m := new(dns.Msg)
 		m.SetReply(req)
-		m.Answer = append(m.Answer, records.answer...)
+
+		// Only include records that match the query type
+		if len(req.Question) > 0 {
+			qtype := req.Question[0].Qtype
+			for _, rr := range records.answer {
+				if rr.Header().Rrtype == qtype {
+					m.Answer = append(m.Answer, rr)
+				} else {
+					logger.Infof("Custom record %s does not match query type %s\n", rr.Header().Name, dns.TypeToString[qtype])
+				}
+			}
+		}
 
 		WriteReplyMsg(writer, m)
 		metric.RequestCustomCounter.Inc()

@@ -3,13 +3,14 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/cottand/leng/internal/metric"
-	"golang.org/x/sys/unix"
 	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
 	"time"
+
+	"github.com/cottand/leng/internal/metric"
+	"golang.org/x/sys/unix"
 )
 
 var (
@@ -45,6 +46,8 @@ func reloadBlockCache(config *Config,
 }
 
 func main() {
+
+	logger.Infof("Starting ur mom")
 	flag.Parse()
 
 	config, err := LoadConfig(configPath)

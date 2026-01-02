@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/cottand/leng/internal/metric"
 	"net"
 	"runtime"
 	"slices"
 	"sync"
 	"time"
+
+	"github.com/cottand/leng/internal/metric"
 
 	"github.com/miekg/dns"
 )
@@ -302,6 +303,12 @@ func (h *EventLoop) doRequest(Net string, w dns.ResponseWriter, req *dns.Msg) {
 			r.SetQuestion(cname.Target, req.Question[0].Qtype)
 			followed, ok := h.responseFor(Net, &r, w.LocalAddr(), w.RemoteAddr())
 			for _, fAnswer := range followed.Answer {
+				// Only include answers that match the original query type or are CNAMEs
+				answerType := fAnswer.Header().Rrtype
+				if answerType != req.Question[0].Qtype && answerType != dns.TypeCNAME {
+					logger.Infof("Answer %s does not match query type %s\n", fAnswer.Header().Name, dns.TypeToString[req.Question[0].Qtype])
+					continue
+				}
 				containsNewAnswer := func(rr dns.RR) bool {
 					return rr.String() == fAnswer.String()
 				}
